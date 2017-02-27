@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 import numpy as np
-import flaschen
+import flaschen_np
 import fsa
 import time
 import argparse
@@ -32,7 +32,7 @@ def main():
     
     args = parser.parse_args()
     
-    ff = flaschen.Flaschen(args.host, args.port, args.width, args.height, args.layer)
+    ff = flaschen_np.FlaschenNP(args.host, args.port, args.width, args.height, args.layer)
     line0 = np.zeros(ff.data.shape[1], dtype='bool')
     line0[line0.shape[0]/2] = True
 

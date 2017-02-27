@@ -1,9 +1,8 @@
 #! /usr/bin/env python
 
 import numpy as np
-import flaschen
+import flaschen_np
 import time
-from IPython import embed
 
 
 def fsa_line(in_line, one_patterns, pad_with = False):
@@ -58,8 +57,8 @@ class FlaschenFSA(object):
 
 
 def main():
-    '''Just run a quick demo'''
-    ff = flaschen.Flaschen('ft.noise', 1337, 45, 35, 11)
+    '''Just run a quick hardcoded demo'''
+    ff = flaschen_np.FlaschenNP('ft.noise', 1337, 45, 35, 11)
     line0 = np.zeros(ff.data.shape[1], dtype='bool')
     line0[line0.shape[0]/2] = True
 
@@ -73,7 +72,8 @@ def main():
         fs.step()
         fs.send()
         time.sleep(.05)
-    embed()
+    import IPython
+    IPython.embed()
 
 
 if __name__ == '__main__':
