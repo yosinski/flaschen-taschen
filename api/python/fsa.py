@@ -2,6 +2,9 @@
 
 import numpy as np
 import flaschen
+import time
+from IPython import embed
+
 
 def fsa_line(in_line, one_patterns, pad_with = False):
     '''Operates on bool array'''
@@ -23,26 +26,55 @@ def fsa_line(in_line, one_patterns, pad_with = False):
 
     return ret
 
+
+def rand_color():
+    return np.random.randint(255, size=3, dtype='int')
+
+
 class FlaschenFSA(object):
-    def __init__(self, ff, line0, one_patterns):
+    def __init__(self, ff, line0, one_patterns, color_0=[1, 1, 1], color_1=[0, 255, 0]):
         self.ff = ff     # flaschen
+        self.ff.zero()
         self.line = line0.copy()
         self.one_patterns = one_patterns
-        self.store_line()
+        self.color_0 = color_0
+        self.color_1 = color_1
+
+        self._store_line()
         
-    def store_line(self):
-        self.ff.data[0] = map(lambda xx:[0, 255, 0] if xx else [255, 0, 0], self.line)
+    def _store_line(self):
+        for jj in range(len(self.line)):
+            color_0 = rand_color() if self.color_0 == 'rand' else self.color_0
+            color_1 = rand_color() if self.color_1 == 'rand' else self.color_1
+            self.ff.data[0,jj] = color_1 if self.line[jj] else color_0
         
     def step(self):
         self.line = fsa_line(self.line, self.one_patterns)
         self.ff.data[1:,:,:] = self.ff.data[:-1,:,:]
-        self.store_line()
+        self._store_line()
         
     def send(self):
         self.ff.send()
 
+
 def main():
-    ff = flaschen.Flaschen()
+    '''Just run a quick demo'''
+    ff = flaschen.Flaschen('ft.noise', 1337, 45, 35, 11)
+    line0 = np.zeros(ff.data.shape[1], dtype='bool')
+    line0[line0.shape[0]/2] = True
+
+    # Sierpinski
+    #patterns = [[False, False, True], [True, False, False]]
+    # Rule 30 chaos
+    patterns = [[True, False, False], [False, True, True], [False, True, False], [False, False, True]]
+    
+    fs = FlaschenFSA(ff, line0, patterns)
+    for ii in xrange(100):
+        fs.step()
+        fs.send()
+        time.sleep(.05)
+    embed()
+
 
 if __name__ == '__main__':
     main()

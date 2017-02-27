@@ -17,7 +17,7 @@ import numpy as np
 
 # JBY: modified to use np as storage backend
 
-class Flaschen(object):
+class FlaschenNP(object):
   '''A Framebuffer display interface that sends a frame via UDP.'''
 
   def __init__(self, host, port, width, height, layer=0, transparent=False):
