@@ -13,6 +13,9 @@
 # along with this program.  If not, see <http://gnu.org/licenses/gpl-2.0.txt>
 
 import socket
+import numpy as np
+
+# JBY: modified to use np as storage backend
 
 class Flaschen(object):
   '''A Framebuffer display interface that sends a frame via UDP.'''
@@ -40,9 +43,10 @@ class Flaschen(object):
     footer = ''.join(["0\n",
                       "0\n",
                       "%d\n" % self.layer])
-    self._data = bytearray(width * height * 3 + len(header) + len(footer))
-    self._data[0:len(header)] = header
-    self._data[-1 * len(footer):] = footer
+    self._bytedata = bytearray(width * height * 3 + len(header) + len(footer))
+    self._bytedata[0:len(header)] = header
+    self._bytedata[-1 * len(footer):] = footer
+    self.data = np.zeros((height, width, 3), 'uint8')
     self._header_len = len(header)
 
   def set(self, x, y, color):
@@ -58,11 +62,28 @@ class Flaschen(object):
     if color == (0, 0, 0) and not self.transparent:
       color = (1, 1, 1)
 
-    offset = (x + y * self.width) * 3 + self._header_len
-    self._data[offset] = color[0]
-    self._data[offset + 1] = color[1]
-    self._data[offset + 2] = color[2]
+    #offset = (x + y * self.width) * 3 + self._header_len
+    #self._data[offset] = color[0]
+    #self._data[offset + 1] = color[1]
+    #self._data[offset + 2] = color[2]
+    self.data[y, x, 0] = color[0]
+    self.data[y, x, 1] = color[1]
+    self.data[y, x, 2] = color[2]
+
+  def ijset(self, ii, jj, color):
+    return self.set(jj, ii, color)
+
+  def zero(self):
+    self.data[:] = 0
   
   def send(self):
     '''Send the updated pixels to the display.'''
-    self._sock.send(self._data)
+    #self._data = bytearray(width * height * 3 + len(header) + len(footer))
+    #self._data[0:len(header)] = header
+    #self._data[-1 * len(footer):] = footer
+
+    self._bytedata[self._header_len:self._header_len + self.data.nbytes] = self.data.tobytes()
+    #bytedata = bytearray(self.width * self.height * 3 + len(self.header) + len(self.footer))
+    #bytedata[0:len(self.header
+    self._sock.send(self._bytedata)
+
